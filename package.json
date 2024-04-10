@@ -3,5 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "author": "DOT • STUDIO",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.12.7",
+    "typescript": "^5.4.5"
+  }
 }
