@@ -1,3 +1,4 @@
+import { zipCodesByDistrict } from "./consts/zipCodes";
 import { type HouseNumberDetails } from "./types";
 
 export const convertHouseNumber = (
@@ -19,4 +20,14 @@ export const convertHouseNumber = (
     houseNumberDecimal,
     houseNumberBlock: obj_houseNumber % 2 === 0 ? "G" : "U",
   };
+};
+
+export const getDistrictsByZipCode = (zipCode: number): string[] => {
+  const matchedDistricts: string[] = [];
+  for (const { district, zipCodes } of zipCodesByDistrict) {
+    if (zipCodes.includes(zipCode)) {
+      matchedDistricts.push(district);
+    }
+  }
+  return matchedDistricts;
 };
