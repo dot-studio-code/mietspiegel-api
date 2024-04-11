@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { getDistrictsByZipCode } from "./lib";
 
-export const requestSchema = z.object({
+export const residentialStatusSchema = z.object({
   obj_street: z.string().min(1, "obj_street is required."),
   obj_houseNumber: z
     .string()

@@ -2,7 +2,7 @@ import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
 import { convertHouseNumber } from "./utils/lib";
 import sqlite3 from "sqlite3";
-import { requestSchema } from "./utils/validate";
+import { residentialStatusSchema } from "./utils/validate";
 
 dotenv.config();
 
@@ -18,7 +18,7 @@ const db = new sqlite3.Database("./db/rentIndex.sqlite", (err) => {
 });
 
 app.get("/residentialStatus", (req: Request, res: Response) => {
-  const validationResult = requestSchema.safeParse(req.query);
+  const validationResult = residentialStatusSchema.safeParse(req.query);
 
   if (!validationResult.success) {
     return res.status(400).json({ errors: validationResult.error.issues });
