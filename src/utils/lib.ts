@@ -22,7 +22,7 @@ export const convertHouseNumber = (
   };
 };
 
-export const getDistrictsByZipCode = (zipCode: number): string[] => {
+export const getDistrictsByZipCode = (zipCode: string): string[] => {
   const matchedDistricts: string[] = [];
   for (const { district, zipCodes } of zipCodesByDistrict) {
     if (zipCodes.includes(zipCode)) {
