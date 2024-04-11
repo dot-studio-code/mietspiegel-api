@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
 import { convertHouseNumber } from "./utils/lib";
 import sqlite3 from "sqlite3";
+import { requestSchema } from "./utils/validate";
 
 dotenv.config();
 
@@ -17,10 +18,16 @@ const db = new sqlite3.Database("./db/rentIndex.sqlite", (err) => {
 });
 
 app.get("/residentialStatus", (req: Request, res: Response) => {
-  const { houseNumber, houseNumberSupplement } = req.query;
+  const validationResult = requestSchema.safeParse(req.query);
+
+  if (!validationResult.success) {
+    return res.status(400).json({ errors: validationResult.error.issues });
+  }
+
+  const { obj_houseNumber, obj_houseNumberSupplement } = validationResult.data;
   const houseNumberDecimal = convertHouseNumber(
-    parseInt(houseNumber as string),
-    houseNumberSupplement as string
+    obj_houseNumber,
+    obj_houseNumberSupplement as string
   );
 
   res.send({});
