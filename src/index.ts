@@ -44,14 +44,14 @@ app.get("/residentialStatus", (req: Request, res: Response) => {
   const sql = `
   SELECT 
     *, 
-    (houseNumberEndDecimal - ${houseNumberDecimal.houseNumberDecimal}) AS houseNumberDiff 
-  FROM streetIndex_Berlin_${rentIndexYear}
+    ("houseNumberEndDecimal" - ${houseNumberDecimal.houseNumberDecimal}) AS "houseNumberDiff" 
+  FROM "streetIndex_Berlin_${rentIndexYear}"
   WHERE
-    street = '${obj_street}' AND 
-    district IN (${districtsString}) AND 
-    B IN ('${houseNumberDecimal.houseNumberBlock}', 'F', 'K')
-  GROUP BY id HAVING houseNumberDiff >= 0
-  ORDER BY houseNumberDiff ASC LIMIT 1`;
+    "street" = '${obj_street}' AND 
+    "district" IN (${districtsString}) AND 
+    "B" IN ('${houseNumberDecimal.houseNumberBlock}', 'F', 'K')
+  GROUP BY "id" HAVING "houseNumberDiff" >= 0
+  ORDER BY "houseNumberDiff" ASC LIMIT 1`;
 
   try {
     const stmt = db.prepare(sql);
