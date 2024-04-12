@@ -2,7 +2,7 @@ import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
 import { convertHouseNumber, getDistrictsByZipCode } from "./utils/lib";
 import Database, { Database as DatabaseType } from "better-sqlite3";
-import { residentialStatusSchema } from "./utils/validate";
+import { rentIndexYearSchema, residentialStatusSchema } from "./utils/validate";
 
 dotenv.config();
 
@@ -18,19 +18,25 @@ try {
   console.error("Error opening database", err);
 }
 
-app.get("/residentialStatus", (req: Request, res: Response) => {
+app.get("/:rentIndexYear/residentialStatus", (req: Request, res: Response) => {
+  const paramValidationResult = rentIndexYearSchema.safeParse(req.params);
+
+  if (!paramValidationResult.success) {
+    return res.status(400).json({ errors: paramValidationResult.error.issues });
+  }
+
   const validationResult = residentialStatusSchema.safeParse(req.query);
 
   if (!validationResult.success) {
     return res.status(400).json({ errors: validationResult.error.issues });
   }
 
+  const { rentIndexYear } = paramValidationResult.data;
   const {
     obj_houseNumber,
     obj_houseNumberSupplement,
     obj_street,
     obj_zipCode,
-    rentIndexYear,
   } = validationResult.data;
 
   const houseNumberDecimal = convertHouseNumber(
@@ -44,14 +50,14 @@ app.get("/residentialStatus", (req: Request, res: Response) => {
   const sql = `
   SELECT 
     *, 
-    ("houseNumberEndDecimal" - ${houseNumberDecimal.houseNumberDecimal}) AS "houseNumberDiff" 
+    ("houseNumberRangeEndDecimal" - ${houseNumberDecimal.houseNumberDecimal}) AS "houseNumberRangeDiff" 
   FROM "streetIndex_Berlin_${rentIndexYear}"
   WHERE
     "street" = '${obj_street}' AND 
     "district" IN (${districtsString}) AND 
     "B" IN ('${houseNumberDecimal.houseNumberBlock}', 'F', 'K')
-  GROUP BY "id" HAVING "houseNumberDiff" >= 0
-  ORDER BY "houseNumberDiff" ASC LIMIT 1`;
+  GROUP BY "id" HAVING "houseNumberRangeDiff" >= 0
+  ORDER BY "houseNumberRangeDiff" ASC LIMIT 1`;
 
   try {
     const stmt = db.prepare(sql);
