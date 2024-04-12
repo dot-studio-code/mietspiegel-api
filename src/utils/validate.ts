@@ -20,12 +20,13 @@ const objZipCodeSchema = z
     message: "obj_zipCode must match at least one district.",
   });
 
-const rentIndexYearSchema = z.enum(["2017", "2019", "2021", "2023"]);
+export const rentIndexYearSchema = z.object({
+  rentIndexYear: z.enum(["2017", "2019", "2021", "2023"]),
+});
 
 export const residentialStatusSchema = z.object({
   obj_street: objStreetSchema,
   obj_houseNumber: objHouseNumberSchema,
   obj_houseNumberSupplement: objHouseNumberSupplementSchema,
   obj_zipCode: objZipCodeSchema,
-  rentIndexYear: rentIndexYearSchema,
 });
