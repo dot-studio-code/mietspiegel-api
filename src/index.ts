@@ -1,6 +1,10 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
-import { convertHouseNumber, getDistrictsByZipCode } from "./utils/lib";
+import {
+  convertHouseNumber,
+  getDistrictsByZipCode,
+  getResidentialStatus,
+} from "./utils/lib";
 import Database, { Database as DatabaseType } from "better-sqlite3";
 import { rentIndexYearSchema, residentialStatusSchema } from "./utils/validate";
 
@@ -39,35 +43,24 @@ app.get("/:rentIndexYear/residentialStatus", (req: Request, res: Response) => {
     obj_zipCode,
   } = validationResult.data;
 
-  const houseNumberDecimal = convertHouseNumber(
-    obj_houseNumber,
-    obj_houseNumberSupplement as string
-  );
-
-  const districtsMap = getDistrictsByZipCode(obj_zipCode);
-  const districtsString = districtsMap.map((district) => `'${district}'`);
-
-  const sql = `
-  SELECT 
-    *, 
-    ("houseNumberRangeEndDecimal" - ${houseNumberDecimal.houseNumberDecimal}) AS "houseNumberRangeDiff" 
-  FROM "streetIndex_Berlin_${rentIndexYear}"
-  WHERE
-    "street" = '${obj_street}' AND 
-    "district" IN (${districtsString}) AND 
-    "B" IN ('${houseNumberDecimal.houseNumberBlock}', 'F', 'K')
-  GROUP BY "id" HAVING "houseNumberRangeDiff" >= 0
-  ORDER BY "houseNumberRangeDiff" ASC LIMIT 1`;
-
   try {
-    const stmt = db.prepare(sql);
-    const result = stmt.get();
-    if (!result) res.status(404).json({ error: "No matching data found" });
+    const result = getResidentialStatus({
+      obj_houseNumber,
+      obj_houseNumberSupplement,
+      obj_street,
+      obj_zipCode,
+      rentIndexYear,
+      db,
+    });
 
-    res.send(result).status(200);
+    if (!result) {
+      return res.status(404).json({ error: "No street matched" });
+    }
+
+    return res.status(200).json(result);
   } catch (err) {
-    console.error("Database query error", err);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Error getting residential status", err);
+    return res.status(500).json({ error: "Error getting residential status" });
   }
 });
 
