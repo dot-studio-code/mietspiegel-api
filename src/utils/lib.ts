@@ -27,11 +27,17 @@ export const convertHouseNumber = (
 };
 
 export const parseHouseNumberDecimal = (
-  houseNumberDecimal: number
-): {
-  houseNumber: number;
-  houseNumberSupplement?: string;
-} => {
+  houseNumberDecimal: number | null
+):
+  | {
+      houseNumber: number;
+      houseNumberSupplement?: string;
+    }
+  | undefined => {
+  if (houseNumberDecimal === null) {
+    return undefined;
+  }
+
   const parts = houseNumberDecimal.toString().split(".");
   const houseNumber = parseInt(parts[0], 10);
   let houseNumberSupplement = undefined;
@@ -83,16 +89,26 @@ export const getResidentialStatus = ({
   const sql = `
   SELECT 
     *, 
-    ("houseNumberRangeEndDecimal" - ${houseNumberDecimal.houseNumberDecimal}) AS "houseNumberRangeDiff" 
+    COALESCE("houseNumberRangeEndDecimal" - ${houseNumberDecimal.houseNumberDecimal}, 0) AS "houseNumberRangeDiff" 
   FROM "streetIndex_Berlin_${rentIndexYear}"
   WHERE
     "street" = '${obj_street}' AND 
     "district" IN (${districtsString}) AND 
-    "houseNumberRangeStartDecimal" <= ${houseNumberDecimal.houseNumberDecimal} AND
-    "houseNumberRangeEndDecimal" >= ${houseNumberDecimal.houseNumberDecimal} AND
-    "B" IN ('${houseNumberDecimal.houseNumberBlock}', 'F', 'K')
-  GROUP BY "id" HAVING "houseNumberRangeDiff" >= 0
-  ORDER BY "houseNumberRangeDiff" ASC LIMIT 1`;
+      (
+        (
+          "houseNumberRangeStartDecimal" <= ${houseNumberDecimal.houseNumberDecimal} AND
+          "houseNumberRangeEndDecimal" >= ${houseNumberDecimal.houseNumberDecimal} AND
+          "B" IN ('${houseNumberDecimal.houseNumberBlock}', 'F')
+        ) OR
+        "B" = 'K'
+      )
+  GROUP BY 
+      "id"
+  HAVING 
+      "houseNumberRangeDiff" >= 0
+  ORDER BY 
+      "houseNumberRangeDiff" ASC
+  LIMIT 1;`;
 
   const stmt = db.prepare(sql);
   const result = stmt.get();
