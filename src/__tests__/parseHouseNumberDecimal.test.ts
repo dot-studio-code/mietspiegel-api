@@ -49,6 +49,6 @@ describe("parseHouseNumberDecimal", () => {
 
   it("should return undefined for supplement if decimal part is zero", () => {
     const result = parseHouseNumberDecimal(123456.0);
-    expect(result.houseNumberSupplement).toBeUndefined();
+    expect(result?.houseNumberSupplement).toBeUndefined();
   });
 });
