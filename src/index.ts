@@ -59,6 +59,17 @@ app.get("/:rentIndexYear/residentialStatus", (req: Request, res: Response) => {
       return res.status(404).json({ error: "No street matched" });
     }
 
+    const parsedStart = parseHouseNumberDecimal(
+      result.houseNumberRangeStartDecimal
+    );
+    const parsedEnd = parseHouseNumberDecimal(
+      result.houseNumberRangeEndDecimal
+    );
+    const rentIndexBlock = {
+      block: result.B,
+      ...(parsedStart ? { start: parsedStart } : {}), // Only include start if defined
+      ...(parsedEnd ? { end: parsedEnd } : {}), // Only include end if defined
+    };
     return res.status(200).json({
       status: "success",
       request: {
@@ -75,15 +86,7 @@ app.get("/:rentIndexYear/residentialStatus", (req: Request, res: Response) => {
         objectStatus: result.objectStatus,
         noiseLevel: convertBooleanString(result.noiseLevel),
         residentialSituation: result.residentialSituation,
-        rentIndexBlock: {
-          start: {
-            ...parseHouseNumberDecimal(result.houseNumberRangeStartDecimal),
-          },
-          end: {
-            ...parseHouseNumberDecimal(result.houseNumberRangeEndDecimal),
-          },
-          block: result.B,
-        },
+        rentIndexBlock,
       },
     });
   } catch (err) {
