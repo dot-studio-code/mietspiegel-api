@@ -1,5 +1,5 @@
 import { zipCodesByDistrict } from "./consts/zipCodes";
-import { type HouseNumberDetails } from "./types";
+import { DBResult, type HouseNumberDetails } from "./types";
 import { type Database as DatabaseType } from "better-sqlite3";
 
 export const convertHouseNumber = (
@@ -50,7 +50,7 @@ export const getResidentialStatus = ({
   obj_zipCode: string;
   rentIndexYear: string;
   db: DatabaseType;
-}) => {
+}): DBResult | undefined => {
   const houseNumberDecimal = convertHouseNumber(
     obj_houseNumber,
     obj_houseNumberSupplement as string
@@ -73,5 +73,9 @@ export const getResidentialStatus = ({
 
   const stmt = db.prepare(sql);
   const result = stmt.get();
-  return result;
+
+  return result as DBResult | undefined;
 };
+
+export const convertBooleanString = (value: string): boolean =>
+  value === "true";
