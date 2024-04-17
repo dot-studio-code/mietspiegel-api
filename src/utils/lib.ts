@@ -88,6 +88,8 @@ export const getResidentialStatus = ({
   WHERE
     "street" = '${obj_street}' AND 
     "district" IN (${districtsString}) AND 
+    "houseNumberRangeStartDecimal" <= ${houseNumberDecimal.houseNumberDecimal} AND
+    "houseNumberRangeEndDecimal" >= ${houseNumberDecimal.houseNumberDecimal} AND
     "B" IN ('${houseNumberDecimal.houseNumberBlock}', 'F', 'K')
   GROUP BY "id" HAVING "houseNumberRangeDiff" >= 0
   ORDER BY "houseNumberRangeDiff" ASC LIMIT 1`;
