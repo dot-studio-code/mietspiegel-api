@@ -1,9 +1,11 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
 import {
+  convertBooleanString,
   convertHouseNumber,
   getDistrictsByZipCode,
   getResidentialStatus,
+  parseHouseNumberDecimal,
 } from "./utils/lib";
 import Database, { Database as DatabaseType } from "better-sqlite3";
 import { rentIndexYearSchema, residentialStatusSchema } from "./utils/validate";
@@ -57,7 +59,33 @@ app.get("/:rentIndexYear/residentialStatus", (req: Request, res: Response) => {
       return res.status(404).json({ error: "No street matched" });
     }
 
-    return res.status(200).json(result);
+    return res.status(200).json({
+      status: "success",
+      request: {
+        houseNumber: obj_houseNumber,
+        houseNumberSupplement: obj_houseNumberSupplement,
+        street: obj_street,
+        zipCode: obj_zipCode,
+        rentIndexYear: rentIndexYear,
+      },
+      data: {
+        matchedStreet: result.street,
+        district: result.district,
+        eastWest: result.eastWest,
+        objectStatus: result.objectStatus,
+        noiseLevel: convertBooleanString(result.noiseLevel),
+        residentialSituation: result.residentialSituation,
+        rentIndexBlock: {
+          start: {
+            ...parseHouseNumberDecimal(result.houseNumberRangeStartDecimal),
+          },
+          end: {
+            ...parseHouseNumberDecimal(result.houseNumberRangeEndDecimal),
+          },
+          block: result.B,
+        },
+      },
+    });
   } catch (err) {
     console.error("Error getting residential status", err);
     return res.status(500).json({ error: "Error getting residential status" });

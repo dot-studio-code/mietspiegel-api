@@ -26,6 +26,27 @@ export const convertHouseNumber = (
   };
 };
 
+export const parseHouseNumberDecimal = (
+  houseNumberDecimal: number
+): {
+  houseNumber: number;
+  houseNumberSupplement?: string;
+} => {
+  const parts = houseNumberDecimal.toString().split(".");
+  const houseNumber = parseInt(parts[0], 10);
+  let houseNumberSupplement = undefined;
+
+  if (parts.length > 1 && parts[1] !== "00") {
+    const letterCode = parseInt(parts[1], 10);
+    houseNumberSupplement = String.fromCharCode(96 + letterCode);
+  }
+
+  return {
+    houseNumber,
+    houseNumberSupplement,
+  };
+};
+
 export const getDistrictsByZipCode = (zipCode: string): string[] => {
   const matchedDistricts: string[] = [];
   for (const { district, zipCodes } of zipCodesByDistrict) {
