@@ -3,12 +3,12 @@ import { DBResult, type HouseNumberDetails } from "./types";
 import { type Database as DatabaseType } from "better-sqlite3";
 
 export const convertHouseNumber = (
-  obj_houseNumber: number,
-  obj_houseNumberSupplement?: string
+  houseNumber: number,
+  houseNumberSupplement?: string
 ): HouseNumberDetails => {
-  const letterPosition: string = obj_houseNumberSupplement
+  const letterPosition: string = houseNumberSupplement
     ? (
-        obj_houseNumberSupplement.toLowerCase().charCodeAt(0) -
+        houseNumberSupplement.toLowerCase().charCodeAt(0) -
         "a".charCodeAt(0) +
         1
       )
@@ -17,12 +17,12 @@ export const convertHouseNumber = (
     : "0";
 
   const houseNumberDecimal: number = parseFloat(
-    `${obj_houseNumber}.${letterPosition}`
+    `${houseNumber}.${letterPosition}`
   );
 
   return {
     houseNumberDecimal,
-    houseNumberBlock: obj_houseNumber % 2 === 0 ? "G" : "U",
+    houseNumberBlock: houseNumber % 2 === 0 ? "G" : "U",
   };
 };
 
@@ -64,26 +64,26 @@ export const getDistrictsByZipCode = (zipCode: string): string[] => {
 };
 
 export const getResidentialStatus = ({
-  obj_houseNumber,
-  obj_houseNumberSupplement,
-  obj_street,
-  obj_zipCode,
+  houseNumber,
+  houseNumberSupplement,
+  street,
+  zipCode,
   rentIndexYear,
   db,
 }: {
-  obj_houseNumber: number;
-  obj_houseNumberSupplement?: string;
-  obj_street: string;
-  obj_zipCode: string;
+  houseNumber: number;
+  houseNumberSupplement?: string;
+  street: string;
+  zipCode: string;
   rentIndexYear: string;
   db: DatabaseType;
 }): DBResult | undefined => {
   const houseNumberDecimal = convertHouseNumber(
-    obj_houseNumber,
-    obj_houseNumberSupplement as string
+    houseNumber,
+    houseNumberSupplement as string
   );
 
-  const districtsMap = getDistrictsByZipCode(obj_zipCode);
+  const districtsMap = getDistrictsByZipCode(zipCode);
   const districtsString = districtsMap.map((district) => `'${district}'`);
 
   const sql = `
@@ -92,7 +92,7 @@ export const getResidentialStatus = ({
     COALESCE("houseNumberRangeEndDecimal" - ${houseNumberDecimal.houseNumberDecimal}, 0) AS "houseNumberRangeDiff" 
   FROM "streetIndex_Berlin_${rentIndexYear}"
   WHERE
-    "street" = '${obj_street}' AND 
+    "street" = '${street}' AND 
     "district" IN (${districtsString}) AND 
       (
         (
@@ -118,3 +118,19 @@ export const getResidentialStatus = ({
 
 export const convertBooleanString = (value: string): boolean =>
   value === "true";
+
+export const fetchDistinctStreets = (
+  db: DatabaseType,
+  rentIndexYear: string
+): string[] => {
+  const sql = `
+  SELECT DISTINCT "street" FROM "streetIndex_Berlin_${rentIndexYear}";
+  `;
+
+  const stmt = db.prepare(sql);
+  const results = stmt.all() as {
+    street: string;
+  }[];
+
+  return results.map((row) => row.street);
+};
