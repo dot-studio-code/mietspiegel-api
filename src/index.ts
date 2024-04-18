@@ -38,12 +38,21 @@ app.get("/:rentIndexYear/residentialStatus", (req: Request, res: Response) => {
   }
 
   const { rentIndexYear } = paramValidationResult.data;
+
   const {
     obj_houseNumber,
     obj_houseNumberSupplement,
     obj_street,
     obj_zipCode,
   } = validationResult.data;
+
+  const requestData = {
+    houseNumber: obj_houseNumber,
+    houseNumberSupplement: obj_houseNumberSupplement,
+    street: obj_street,
+    zipCode: obj_zipCode,
+    rentIndexYear: rentIndexYear,
+  };
 
   try {
     const result = getResidentialStatus({
@@ -56,29 +65,30 @@ app.get("/:rentIndexYear/residentialStatus", (req: Request, res: Response) => {
     });
 
     if (!result) {
-      return res.status(404).json({ error: "No street matched" });
+      return res.status(404).json({
+        status: "error",
+        message: "no street matched",
+        request: requestData,
+      });
     }
 
     const parsedStart = parseHouseNumberDecimal(
       result.houseNumberRangeStartDecimal
     );
+
     const parsedEnd = parseHouseNumberDecimal(
       result.houseNumberRangeEndDecimal
     );
+
     const rentIndexBlock = {
       block: result.B,
       ...(parsedStart ? { start: parsedStart } : {}), // Only include start if defined
       ...(parsedEnd ? { end: parsedEnd } : {}), // Only include end if defined
     };
+
     return res.status(200).json({
       status: "success",
-      request: {
-        houseNumber: obj_houseNumber,
-        houseNumberSupplement: obj_houseNumberSupplement,
-        street: obj_street,
-        zipCode: obj_zipCode,
-        rentIndexYear: rentIndexYear,
-      },
+      request: requestData,
       data: {
         matchedStreet: result.street,
         district: result.district,
