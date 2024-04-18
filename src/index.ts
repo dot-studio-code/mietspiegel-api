@@ -2,11 +2,13 @@ import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
 import {
   convertBooleanString,
+  fetchDistinctStreets,
   getResidentialStatus,
   parseHouseNumberDecimal,
 } from "./utils/lib";
 import Database, { Database as DatabaseType } from "better-sqlite3";
 import { rentIndexYearSchema, residentialStatusSchema } from "./utils/validate";
+import Fuse from "fuse.js";
 
 dotenv.config();
 
@@ -14,10 +16,17 @@ const app: Express = express();
 const port = process.env.PORT || 3000;
 
 let db: DatabaseType;
+let DISTINCT_STREETS: Record<string, string[]>; // Define DISTINCT_STREETS at a higher scope
 
 try {
   db = new Database("./db/rentIndex.sqlite");
   console.log("Connected to the SQLite database.");
+
+  DISTINCT_STREETS = {
+    2017: fetchDistinctStreets(db, "2017"),
+    2019: fetchDistinctStreets(db, "2019"),
+    2023: fetchDistinctStreets(db, "2023"),
+  };
 } catch (err) {
   console.error("Error opening database", err);
 }
@@ -37,28 +46,22 @@ app.get("/:rentIndexYear/residentialStatus", (req: Request, res: Response) => {
 
   const { rentIndexYear } = paramValidationResult.data;
 
-  const {
-    obj_houseNumber,
-    obj_houseNumberSupplement,
-    obj_street,
-    obj_zipCode,
-  } = validationResult.data;
-
   const requestData = {
-    houseNumber: obj_houseNumber,
-    houseNumberSupplement: obj_houseNumberSupplement,
-    street: obj_street,
-    zipCode: obj_zipCode,
+    houseNumber: validationResult.data.obj_houseNumber,
+    houseNumberSupplement: validationResult.data.obj_houseNumberSupplement,
+    street: validationResult.data.obj_street,
+    zipCode: validationResult.data.obj_zipCode,
     rentIndexYear: rentIndexYear,
   };
 
+  const fuse = new Fuse(DISTINCT_STREETS[rentIndexYear]);
+
+  const searchResult = fuse.search(requestData.street);
+
   try {
     const result = getResidentialStatus({
-      obj_houseNumber,
-      obj_houseNumberSupplement,
-      obj_street,
-      obj_zipCode,
-      rentIndexYear,
+      ...requestData,
+      street: searchResult[0].item,
       db,
     });
 
@@ -80,8 +83,8 @@ app.get("/:rentIndexYear/residentialStatus", (req: Request, res: Response) => {
 
     const rentIndexBlock = {
       block: result.B,
-      ...(parsedStart ? { start: parsedStart } : {}), // Only include start if defined
-      ...(parsedEnd ? { end: parsedEnd } : {}), // Only include end if defined
+      ...(parsedStart ? { start: parsedStart } : {}),
+      ...(parsedEnd ? { end: parsedEnd } : {}),
     };
 
     return res.status(200).json({
