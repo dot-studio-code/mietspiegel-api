@@ -2,8 +2,6 @@ import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
 import {
   convertBooleanString,
-  convertHouseNumber,
-  getDistrictsByZipCode,
   getResidentialStatus,
   parseHouseNumberDecimal,
 } from "./utils/lib";
