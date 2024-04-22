@@ -47,10 +47,10 @@ app.get("/:rentIndexYear/residentialStatus", (req: Request, res: Response) => {
   const { rentIndexYear } = paramValidationResult.data;
 
   const requestData = {
-    houseNumber: validationResult.data.obj_houseNumber,
-    houseNumberSupplement: validationResult.data.obj_houseNumberSupplement,
-    street: validationResult.data.obj_street,
-    zipCode: validationResult.data.obj_zipCode,
+    houseNumber: validationResult.data.houseNumber,
+    houseNumberSupplement: validationResult.data.houseNumberSupplement,
+    street: validationResult.data.street,
+    zipCode: validationResult.data.zipCode,
     rentIndexYear: rentIndexYear,
   };
 

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { getDistrictsByZipCode } from "./lib";
 
-const objStreetSchema = z.string().min(1, "obj_street is required.");
+const objStreetSchema = z.string().min(1, "street is required.");
 
 const objHouseNumberSchema = z
   .string()
@@ -10,14 +10,14 @@ const objHouseNumberSchema = z
 
 const objHouseNumberSupplementSchema = z
   .string()
-  .max(1, "obj_houseNumberSupplement cannot be longer than 1 character.")
+  .max(1, "houseNumberSupplement cannot be longer than 1 character.")
   .optional();
 
 const objZipCodeSchema = z
   .string()
-  .min(5, "obj_zipCode must be at least 5 characters long.")
+  .min(5, "zipCode must be at least 5 characters long.")
   .refine((zipCode) => getDistrictsByZipCode(zipCode).length >= 1, {
-    message: "obj_zipCode must match at least one district.",
+    message: "zipCode must match at least one district.",
   });
 
 export const rentIndexYearSchema = z.object({
@@ -25,8 +25,8 @@ export const rentIndexYearSchema = z.object({
 });
 
 export const residentialStatusSchema = z.object({
-  obj_street: objStreetSchema,
-  obj_houseNumber: objHouseNumberSchema,
-  obj_houseNumberSupplement: objHouseNumberSupplementSchema,
-  obj_zipCode: objZipCodeSchema,
+  street: objStreetSchema,
+  houseNumber: objHouseNumberSchema,
+  houseNumberSupplement: objHouseNumberSupplementSchema,
+  zipCode: objZipCodeSchema,
 });
