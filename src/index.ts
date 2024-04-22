@@ -81,7 +81,7 @@ app.get("/:rentIndexYear/residentialStatus", (req: Request, res: Response) => {
       result.houseNumberRangeEndDecimal
     );
 
-    const rentIndexBlock = {
+    const houseNumberRange = {
       block: result.B,
       ...(parsedStart ? { start: parsedStart } : {}),
       ...(parsedEnd ? { end: parsedEnd } : {}),
@@ -97,7 +97,7 @@ app.get("/:rentIndexYear/residentialStatus", (req: Request, res: Response) => {
         objectStatus: result.objectStatus,
         noiseLevel: convertBooleanString(result.noiseLevel),
         residentialSituation: result.residentialSituation,
-        rentIndexBlock,
+        houseNumberRange,
       },
     });
   } catch (err) {
