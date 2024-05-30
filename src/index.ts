@@ -26,6 +26,7 @@ try {
     2017: fetchDistinctStreets(db, "2017"),
     2019: fetchDistinctStreets(db, "2019"),
     2023: fetchDistinctStreets(db, "2023"),
+    2024: fetchDistinctStreets(db, "2024"),
   };
 } catch (err) {
   console.error("Error opening database", err);

@@ -21,7 +21,7 @@ const objZipCodeSchema = z
   });
 
 export const rentIndexYearSchema = z.object({
-  rentIndexYear: z.enum(["2017", "2019", "2021", "2023"]),
+  rentIndexYear: z.enum(["2017", "2019", "2021", "2023", "2024"]),
 });
 
 export const residentialStatusSchema = z.object({
