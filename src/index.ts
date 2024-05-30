@@ -96,8 +96,12 @@ app.get("/:rentIndexYear/residentialStatus", (req: Request, res: Response) => {
         district: result.district,
         eastWest: result.eastWest,
         objectStatus: result.objectStatus,
-        noiseLevel: convertBooleanString(result.noiseLevel),
-        residentialSituation: result.residentialSituation,
+        ...(result.noiseLevel !== null && {
+          noiseLevel: convertBooleanString(result.noiseLevel),
+        }),
+        ...(result.residentialSituation !== null && {
+          residentialSituation: result.residentialSituation,
+        }),
         houseNumberRange,
       },
     });
